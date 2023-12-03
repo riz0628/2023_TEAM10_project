@@ -1,6 +1,8 @@
 #include "openai.hpp"
 #include <iostream>
 #include <string>
+#include <vector>
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -34,6 +36,15 @@ class Interviewee
                                 violence_result = 0;
 
                 }
+		void set_question(string question){
+			QV.push_back(question);
+		}
+		void set_answer(string answer){
+                        AV.push_back(answer);
+                }
+
+		string get_question(int idx){return QV.at(idx);}
+		string get_answer(int idx){return AV.at(idx);}
 
 		string get_Name(){return name;}
 		int get_harassment(){return harassment_result;}
@@ -44,6 +55,8 @@ class Interviewee
 		int self_harm_result; // 0 = FAIL. 1 = PASS.
 		int violence_result; // 0 = FAIL. 1 = PASS.
 		string name;
+		vector <string> QV;
+		vector <string> AV;
 
 
 };
@@ -142,13 +155,24 @@ string make_question(){
     		{
         		"model": "gpt-3.5-turbo",
         		"messages":[{"role":"user", "content":"Ask me one question that can simply assess my personality in one sentence."}],
-        		"temperature": 2
+        		"temperature": 1.3
     		}
     		)"_json);
 		auto response = chat["choices"][0]["message"]["content"].template get<std::string>();
 		return response;
 	}
 }
+
+/*string edit_answer(string answer){
+	openai::start();
+	json ans;
+	ans["input"] = answer;
+	ans["model"] = "text-davinci-edit-001";
+	ans["instruction"] = "Change it to a more morally correct sentence.";
+	auto edit = openai::edit().create(ans);
+	auto response = edit["choices"][0]["text"].template get<std::string>();
+	return response;
+}*/
 
 // Function that Evaluate your answer!!
 /*float evaluation(string answer){
@@ -181,8 +205,9 @@ int main() {
 		YOU.set_Name(temp);
 		cout << "OK, " << YOU.get_Name() << " let's start interview" << endl;
 		for(int i = 1; i < 4; i++)		//ASK 3 QUESTION.
-		{
-			cout <<"Q"<< i << " : " << make_question() << endl;
+		{	
+			YOU.set_question(make_question());
+			cout <<"Q"<< i << " : " << YOU.get_question(i-1) << endl;
 			getline(cin, answer);
 			I1.set_result(I1.evaluation(answer));
 			cout << I1.evaluation(answer) << endl; // VIEW HARASSMENT SCORE (FOR DEBUGGING)
