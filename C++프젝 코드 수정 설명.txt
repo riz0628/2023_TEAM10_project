@@ -1,0 +1,219 @@
+#include <time.h>//중복된거 빼기
+#include <stdlib.h>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <openai어쩌구저쩌구>
+
+main(){
+	srand(time(NULL));
+	interviewer* assistant[3];//인성면접관들 = assistants
+	assistant[0] = new harassment_interviewer();
+	assistant[1] = new self_harm_interviewer();
+	assistant[2] = new violence_interviewer();
+	master_interviewer KK;//질문 만들고 comment 만드는 놈
+	KK.do_interview(assistant);//assistant들과 interview 실행
+	delete assistant[0];//
+	delete assistant[1];
+	delete assistant[2];
+	return 0;
+}
+
+
+
+
+do_interview(assistant) : master_interviewer의 member function, 인자 : interviewer* assistant[]
+1. 인사말 출력 : cout << "~";
+2. topic_list 받기 or default topic_list 저장 : set_topic();//원하는 토픽으로 면접 볼 수 있는 기능 추가
+3. 토픽에 대한 질문(for문)
+3-1. 토픽 질문 만들고 출력 : make_topic_question(); cout << question[question.size() - 1];
+3-2. 답변 받기 : string a; getline(cin, a); ans.push_back(a);
+3-3. comment 만들기 : make_comment();
+3-4. rand()%3로 해당 토픽의 꼬리질문 횟수 결정 : int tail_num = rand() % 3;
+3-5. 꼬리질문 만들고(for문) 출력 : make_tail_question(); cout << question[question.size() - 1];
+3-6. 답변 받기 : getline(cin, a); ans.push_back(a);
+3-7. comment 만들기 : make_comment();
+4. 피드백 하기 : feedback(assistant);
+5. 마무리말 출력 : cout << "~";
+
+
+
+
+class interviewer{
+	public:
+		virtual void check_pass(std::string ans){//차피 child class를 통해 polymorphism 할거라 굳이 안해도 되긴 하는데 걍 child class 한놈꺼 채우는게 나을듯
+			/*fill here*/		//ans를 AI에게 보내 moderation을 통해 0 또는 1을 pass.push_back() 하기
+		}
+		virtual void print_pass(int index){
+			if(pass[i]){
+				std::cout << "Your answer is safe in terms of harassment.\n";
+			}
+			else{
+				std::cout << "Your answer is not safe in terms of harassment. You must change your answer!\n";
+			}
+		}
+	protected:				//protected는 자식 class에서 접근 가능
+		std::vector<std::bool> pass;
+};
+
+
+class harassment_interviewer: public interviewer{
+	public:
+		void check_pass(string ans){//답변(ans)이 해당 인성항목에 위배되는지를 체크
+			/*fill here*/		//ans를 AI에게 보내 moderation을 harassment를 통해 0 또는 1을 pass.push_back() 하기 
+		}
+		void print_pass(int index){//index번째 답변이 인성항목에 위배되는지를 출력해서 알려줌
+			if(pass[i]){
+				std::cout << "Your answer is safe in terms of harassment.\n";
+			}
+			else{
+				std::cout << "Your answer is not safe in terms of harassment. You must change your answer!\n";
+			}
+		}
+};
+
+
+class self_harm_interviewer: public interviewer{
+	public:
+		void check_pass(string ans){//답변(ans)이 해당 인성항목에 위배되는지를 체크
+			/*fill here*/		//ans를 AI에게 보내 moderation을 self_harm를 통해 0 또는 1을 pass.push_back() 하기
+		}
+		void print_pass(int index){//index번째 답변이 인성항목에 위배되는지를 출력해서 알려줌
+			if(pass[i]){
+				std::cout << "Your answer is safe in terms of self_harm.\n";
+			}
+			else{
+				std::cout << "Your answer is not safe in terms of self_harm. You must change your answer!\n";
+			}
+		}
+};
+
+
+class violence_interviewer: public interviewer{
+	public:
+		void check_pass(string ans){//답변(ans)이 해당 인성항목에 위배되는지를 체크
+			/*fill here*/		//ans를 AI에게 보내 moderation을 violence를 통해 0 또는 1을 pass.push_back() 하기
+		}
+		void print_pass(int index){
+			if(pass[i]){//index번째 답변이 인성항목에 위배되는지를 출력해서 알려줌
+				std::cout << "Your answer is safe in terms of violence.\n";
+			}
+			else{
+				std::cout << "Your answer is not safe in terms of violence. You must change your answer!\n";
+			}
+		}
+};
+
+
+
+class master_interviewer{
+	public:
+		void set_topic(){//topic_list, topic_num, topic_done 세팅 : default topic으로 면접 볼수도, 원하는 토픽으로 설정해 면접 볼 수도 있음
+			std::cout << "Before we start the interview, write the number of topics you want to set for the interview. For default topics, '0' is fine.\n";
+			std::cin >> topic_num;
+			std::getchar();
+			if(topic_num == 0){//default topic 선택
+				topic_list.push_back("job-related knowledge");
+				topic_list.push_back("job-related competencies");
+				topic_list.push_back("problem-solving ability");
+				topic_list.push_back("decision-making ability");
+				topic_list.push_back("leadership skills");
+				topic_list.push_back("communication skills");
+				topic_list.push_back("global competence");
+				topic_num = 7;
+			}
+			else{//내가 원하는 topic 세팅
+				for(int i = 0; i < topic_num; i++){
+					std::cout << "write '" << i+1 << "'th topic : ";
+					std::string t;
+					std::getline(cin,t);
+					topic_list.push_back(t);
+				}
+			}
+			for(int i = 0; i < topic_num; i++){
+				topic_done.push_back(0);
+			}
+		}
+
+
+		void make_topic_question(int i){	//토픽 첫 질문 만들고 question에 push_back()
+			int topic_index = rand() % topic_num;//질문할 토픽 고르기
+			std::string topic;
+			if(topic_done[topic_index]){//이미 사용한 토픽 걸린 경우 랜덤토픽(토픽 미지정) 
+				topic = ".";
+			}
+			else{//새 토픽 걸린 경우
+				topic = " about '" + topic_list[topic_index] + "'.";
+			}
+			if(i == 0){//첫번째 질문은 무조건 자기소개
+				question.push_back("Can you introduce yourself?");
+			}
+			else{//AI에게 해당 토픽 관련 질문 내달라 요청 -> question에 저장 && topic_done 갱신
+				std::string q = "You are an executive interviewer at Samsung Electronics. Ask the interviewee a question" + topic;
+				/*fill here*/		//q을 AI에게 보내 그 답을 q에 저장
+				question.push_back(q);
+				topic_done[topic_index] = 1;
+			}
+		}
+
+
+		void make_tail_question(){//꼬리 질문 만드는 함수
+			std::string q = "In an executive interview with Samsung Electronics, I heard the question '" + question[question.size() - 1] + "', and I answered '" + ans[ans.size() - 1] + "'. What will you ask next?";
+			/*fill here*/			//q를 AI에게 보내고 답변을 q에 저장
+			question.push_back(q);
+		}
+
+
+		void make_comment(){//comment 만드는 함수
+			std::string c = "In an executive interview with Samsung Electronics, I heard the question '" + question[question.size() - 1] + "', and I answered '" + ans[ans.size() - 1] + "'. What do you think this answer is out of 100 and why?";
+			/*fill here*/			//c를 AI에게 보내고 답변을 c에 저장
+			comment.push_back(c);
+		}
+
+
+		feedback(interviewer* assistant[]){//질문-답변-comment 출력 && assistant들이 critical한 인성항목에 위배되는 질문인지 아닌지 체크해줌
+			for(int i = 0; i < question.size(); i++){
+				std::cout << "Q. " << question[i] << std::endl << "A. " << ans[i] << "\n***Comment***\n" << comment[i] < std::endl;
+				for(int j = 0; j < 3; j++){
+					assistant[j]->check_pass(ans[i]);
+					assstant[j]->print_pass();
+				}
+			}
+		}
+
+
+
+		void do_interview(interviewer* assistant[]){//모의면접 실행 함수
+			std::cout << "Hello. This is a mock interview program to prepare for Samsung Electronics' executive interview.\nI hope this program will help you prepare for the interview.\n\n";//인삿말 출력						
+			set_topic();//면접에 사용할 topic 세팅(default or 자율적으로 세팅) : topic_list, topic_num 설정
+			for(int i = 0; i <= topic_num; i++){//질문-답변받기-comment 작성
+				make_topic_question(i);//토픽 첫 질문 만들기 : 질문 만들고 question에 push_back(), topic_done 갱신
+				std::cout << question[question.size() - 1] << std::endl;//토픽 질문 출력
+				std::string a;//질문 답변 입력받고 ans에 저장
+				std::getline(cin, a);
+				ans.push_back(a);
+				make_comment()//답변에 대한 comment 만들기
+
+				int tail_num = rand() % 3;//꼬리 질문 갯수
+				for(int j = 0; j < tail_num; j++)
+					make_tail_question();//꼬리 질문 만들기 : 질문 만들고 question에 push back()
+					std::cout << question[question.size() - 1] << std::endl;//꼬리 질문 출력
+					std::string a;//질문 답변 입력받고 ans에 저장
+					std::getline(cin, a);
+					ans.push_back(a);
+					make_comment()//답변에 대한 comment 만들기
+				}
+			}
+			feedback(assistant);//피드백 받기
+			std::cout << "\n\nNow, the mock interview is over. I hope this mock interview helped you prepare for your interview. Goodbye~";//마무리말 출력
+		}
+
+
+
+
+	private:
+		std::vector<std::string> question, ans, comment;//질문, 답변, 코멘트(+ 점수) 저장용
+		std::vector<std::string> topic_list;//면접에서 사용할 topic list
+		std::vector<std::bool> topic_done//면접에서 해당 topic 이미 사용했는지 안했는지 확인 용도
+		int topic_num;//topic_list에 몇개의 topic 저장되어있는가
+};
